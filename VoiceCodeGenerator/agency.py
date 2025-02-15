@@ -1,8 +1,8 @@
 from agency_swarm import Agency, set_openai_key
-from VoiceCodeGenerator.CodeDebuggerAgent.CodeDebuggerAgent import CodeDebuggerAgent
-from VoiceCodeGenerator.CodeGeneratorAgent.CodeGeneratorAgent import CodeGeneratorAgent
-from VoiceCodeGenerator.VoiceInputAgent.VoiceInputAgent import VoiceInputAgent
-from VoiceCodeGenerator.VoiceCodeCEO.VoiceCodeCEO import VoiceCodeCEO
+from CodeDebuggerAgent.CodeDebuggerAgent import CodeDebuggerAgent
+from CodeGeneratorAgent.CodeGeneratorAgent import CodeGeneratorAgent
+from VoiceInputAgent.VoiceInputAgent import VoiceInputAgent
+from VoiceCodeCEO.VoiceCodeCEO import VoiceCodeCEO
 import os
 from dotenv import load_dotenv
 import gradio as gr
@@ -20,9 +20,9 @@ code_debugger = CodeDebuggerAgent()
 # Create agency
 agency = Agency(
     [ceo, [ceo, voice_input],
-     [ceo, code_generator],
+     [voice_input, code_generator],
      [ceo, code_debugger],
-     [voice_input, code_generator]],
+     ],
     shared_instructions='./agency_manifesto.md',
     max_prompt_tokens=25000,
     temperature=0.3,
@@ -49,7 +49,7 @@ if __name__ == '__main__':
                         return history
                     
                     # Send the transcribed text to the agency and get response
-                    response = agency.start_chat(text)
+                    response = agency.get_completion(text)
                     
                     # Update chat history
                     history = history or []
