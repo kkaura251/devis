@@ -1,32 +1,66 @@
 from agency_swarm import Agency, set_openai_key
-from CodeDebuggerAgent import CodeDebuggerAgent
-from CodeGeneratorAgent import CodeGeneratorAgent
-from VoiceInputAgent import VoiceInputAgent
-from VoiceCodeCEO import VoiceCodeCEO
+from VoiceCodeGenerator.CodeDebuggerAgent.CodeDebuggerAgent import CodeDebuggerAgent
+from VoiceCodeGenerator.CodeGeneratorAgent.CodeGeneratorAgent import CodeGeneratorAgent
+from VoiceCodeGenerator.VoiceInputAgent.VoiceInputAgent import VoiceInputAgent
+from VoiceCodeGenerator.VoiceCodeCEO.VoiceCodeCEO import VoiceCodeCEO
 import os
 from dotenv import load_dotenv
+import gradio as gr
 
-# Load environment variables from .env
+# Load environment variables and set API key
 load_dotenv()
+set_openai_key(os.getenv('OPENAI_API_KEY'))
 
-# Set OpenAI API key
-api_key = os.getenv('OPENAI_API_KEY')
-set_openai_key(api_key)
-
-# Initialize CEO
+# Initialize agents
 ceo = VoiceCodeCEO()
 voice_input = VoiceInputAgent()
 code_generator = CodeGeneratorAgent()
 code_debugger = CodeDebuggerAgent()
 
-agency = Agency([ceo, [ceo, voice_input],
-                 [ceo, code_generator],
-                 [ceo, code_debugger],
-                 [voice_input, code_generator]],
-                shared_instructions='./agency_manifesto.md',  # shared instructions for all agents
-                max_prompt_tokens=25000,  # default tokens in conversation for all agents
-                temperature=0.3,  # default temperature for all agents
-                )
+# Create agency
+agency = Agency(
+    [ceo, [ceo, voice_input],
+     [ceo, code_generator],
+     [ceo, code_debugger],
+     [voice_input, code_generator]],
+    shared_instructions='./agency_manifesto.md',
+    max_prompt_tokens=25000,
+    temperature=0.3,
+)
 
 if __name__ == '__main__':
-    agency.demo_gradio()
+    with gr.Blocks() as interface:
+        gr.Markdown("# Voice Code Generator")
+        with gr.Row():
+            # Voice input section
+            with gr.Column(scale=1):
+                audio_recorder, transcription = voice_input.create_gradio_interface()
+                send_button = gr.Button("Send to Agents")
+            
+            # Agency chat section
+            with gr.Column(scale=2):
+                chatbot = gr.Chatbot(
+                    label="Agent Conversation",
+                    height=500
+                )
+                
+                def send_to_agents(text, history):
+                    if not text:
+                        return history
+                    
+                    # Send the transcribed text to the agency and get response
+                    response = agency.start_chat(text)
+                    
+                    # Update chat history
+                    history = history or []
+                    history.append((text, response))
+                    return history
+                
+                # Connect send button to chatbot
+                send_button.click(
+                    fn=send_to_agents,
+                    inputs=[transcription, chatbot],
+                    outputs=[chatbot]
+                )
+    
+    interface.launch(share=True)
