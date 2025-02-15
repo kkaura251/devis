@@ -16,11 +16,6 @@ class CodeGeneratorAgent(Agent):
         )
 
     def process_message(self, message):
-        prompt = (
-            "Generate Python code based on the following description.\n\n"
-            f"Description: {message}\n\n"
-            "Provide the complete, runnable code with proper comments where necessary."
-        )
         response = self.get_completion(prompt)
         return response
 
