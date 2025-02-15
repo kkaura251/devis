@@ -1,2 +1,6 @@
 # devis
-jarvis for coding
+Jarvis for coding
+
+## Setup
+
+1. Create a virtual environment:
