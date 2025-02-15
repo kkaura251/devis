@@ -22,8 +22,7 @@ code_debugger = CodeDebuggerAgent()
 agency = Agency([ceo, [ceo, voice_input],
                  [ceo, code_generator],
                  [ceo, code_debugger],
-                 [voice_input, code_generator],
-                 [code_generator, code_debugger]],
+                 [voice_input, code_generator]],
                 shared_instructions='./agency_manifesto.md',  # shared instructions for all agents
                 max_prompt_tokens=25000,  # default tokens in conversation for all agents
                 temperature=0.3,  # default temperature for all agents
