@@ -15,5 +15,12 @@ class CodeGeneratorAgent(Agent):
             max_prompt_tokens=25000,
         )
 
-    def response_validator(self, message):
-        return message
+    def process_message(self, message):
+        prompt = (
+            "Generate Python code based on the following description.\n\n"
+            f"Description: {message}\n\n"
+            "Provide the complete, runnable code with proper comments where necessary."
+        )
+        response = self.get_completion(prompt)
+        return response
+
